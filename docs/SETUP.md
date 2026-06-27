@@ -117,7 +117,7 @@ hotel-chatbot-n8n    running
 
 #### Node 4: Read Write File from Disk (Đọc file)
 - **Operation**: `Read File`
-- **File Path**: `/home/node/knowledge/{{ $json.name }}`
+- **File Path**: `/home/node/knowledge/{{ $binary.data.fileName }}`
 - **Output Binary Field**: `data`
 
 #### Node 5: Postgres PGVector Store (Insert Documents)
@@ -127,10 +127,9 @@ hotel-chatbot-n8n    running
 - **Metadata Column Name**: `metadata`
 - **Embedding Batch Size**: `1`
 - **Sub-node: Default Data Loader** (Gắn vào ô *Document*):
-  - **Type of Data**: `JSON`
-  - **Mode**: `Load All Input Data`
+  - **Type of Data**: `Binary`
+  - **Binary Property**: `data`
   - **Text Splitting**: `Simple` (hoặc Custom)
-  - **Options**: Click **Add Option** -> **Page Content Property** -> Điền: `pageContent`
 - **Sub-node: Embeddings Google Gemini** (Gắn vào ô *Embedding*):
   - **Model**: `models/gemini-embedding-001`
   - **Credentials**: Google Gemini credential đã tạo
