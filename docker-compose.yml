@@ -58,6 +58,9 @@ services:
       N8N_ENFORCE_SETTINGS_FILE_FOR_ENV_VARIABLES: "false"
       # Whitelist local folder access
       N8N_RESTRICT_FILE_ACCESS_TO: "/home/node/knowledge"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     volumes:
       - n8n_data:/home/node/.n8n
       - ./knowledge:/home/node/knowledge
