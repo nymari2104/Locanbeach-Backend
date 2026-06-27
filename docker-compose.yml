@@ -44,7 +44,7 @@ services:
       N8N_HOST: localhost
       N8N_PORT: 5678
       N8N_PROTOCOL: http
-      WEBHOOK_URL: http://localhost:5678/
+      WEBHOOK_URL: https://${SUBDOMAIN:-ocean-breeze-resort-chatbot}.loca.lt/
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-mvp-local-encryption-key-change-in-prod}
       # Timezone Vietnam
       GENERIC_TIMEZONE: Asia/Ho_Chi_Minh
@@ -58,6 +58,10 @@ services:
       N8N_ENFORCE_SETTINGS_FILE_FOR_ENV_VARIABLES: "false"
       # Whitelist local folder access
       N8N_RESTRICT_FILE_ACCESS_TO: "/home/node/knowledge"
+      # Facebook API environment variables for workflow use
+      FB_PAGE_ACCESS_TOKEN: ${FB_PAGE_ACCESS_TOKEN}
+      FB_VERIFY_TOKEN: ${FB_VERIFY_TOKEN}
+      FB_APP_SECRET: ${FB_APP_SECRET}
     dns:
       - 8.8.8.8
       - 1.1.1.1
@@ -79,6 +83,17 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    networks:
+      - hotel-chatbot-net
+
+  # ── Localtunnel (Public Webhook URL Tunnel) ──
+  localtunnel:
+    image: node:20-alpine
+    container_name: hotel-chatbot-tunnel
+    restart: unless-stopped
+    command: sh -c "npm install -g localtunnel && lt --host https://localtunnel.me --port 5678 --subdomain ${SUBDOMAIN:-ocean-breeze-resort-chatbot}"
+    depends_on:
+      - n8n
     networks:
       - hotel-chatbot-net
 

@@ -369,3 +369,142 @@ Mở trình duyệt và truy cập: **`http://localhost:8080`** (hoặc `http://
 - **Xem dữ liệu phòng nghỉ**: Click vào bảng **`room_types`** ở cột trái -> Click **`Select data`** ở trên cùng. Bạn có thể bấm nút **`Edit`** trực tiếp ở từng dòng để đổi giá phòng hoặc mô tả.
 - **Thêm dịch vụ mới**: Click vào bảng **`hotel_services`** -> Click **`New item`** -> Nhập tên dịch vụ tiếng Việt, tiếng Anh và giá cả -> Click **`Save`**.
 - **Chạy lệnh SQL**: Click vào mục **`SQL command`** ở trên cùng bên trái để tự viết và chạy các câu lệnh SQL tùy ý.
+
+---
+
+## Bước 10: Tích Hợp Tự Động Trả Lời Trên Facebook Messenger 💬
+
+> Hệ thống đã tự động chạy **Localtunnel** để mở cổng local của n8n ra internet tại đường dẫn: `https://ocean-breeze-resort-chatbot-mvp.loca.lt`. Bước này giúp bạn kết nối Fanpage Facebook với n8n.
+
+### Phần A: Cấu hình trên Meta Developer Portal (Facebook Developer)
+
+1. **Tạo Ứng dụng**:
+   - Truy cập: https://developers.facebook.com → Đăng nhập tài khoản Facebook của bạn.
+   - Click **My Apps** → **Create App** → Chọn loại **Business** (hoặc *Other* -> *Business*).
+   - Điền tên hiển thị ứng dụng (ví dụ: `Ocean Breeze Bot`) và chọn email liên hệ. Bấm **Create App**.
+
+2. **Thêm sản phẩm Messenger**:
+   - Trong dashboard ứng dụng, tìm mục **Messenger** → Bấm **Set Up**.
+
+3. **Liên kết Trang Fanpage & Lấy Page Token**:
+   - Trong menu trái, click **Messenger** → **API Setup**.
+   - Tại mục **Configure tokens**, click **Add or remove Pages** để cấp quyền cho Trang Fanpage khách sạn của bạn.
+   - Sau khi liên kết, click **Generate token** bên cạnh Trang của bạn → Chọn đồng ý các quyền và copy lại mã token này. 
+   - Dán mã này vào biến **`FB_PAGE_ACCESS_TOKEN`** trong file `.env` ở local của bạn.
+
+4. **Lấy App Secret**:
+   - Menu trái, click **App settings** → **Basic**.
+   - Copy **App Secret** (Mật khẩu ứng dụng) và dán vào biến **`FB_APP_SECRET`** trong file `.env`.
+   - Đặt một chuỗi bất kỳ làm **Verify Token** (ví dụ: `ocean_breeze_verify_token_2025`) và dán vào **`FB_VERIFY_TOKEN`** trong file `.env`.
+
+5. **Khởi động lại Docker** để cập nhật các token mới vào n8n:
+   ```powershell
+   docker compose up -d
+   ```
+
+---
+
+### Phần B: Xây dựng Workflow Tự Động Trả Lời Trên n8n
+
+Tạo một workflow mới đặt tên là: **"Facebook Chatbot Connector"** trên n8n với sơ đồ sau:
+
+```
+[Webhook Node (GET/POST)] 
+    → [Switch Node (GET vs POST)]
+          ├─ (GET) → [Respond to Webhook (Verify hub.challenge)]
+          └─ (POST) → [HTTP Request (Get Profile/Sender Details)] (Optional)
+                        → [PostgreSQL (Lấy hoặc Tạo Chat Session)]
+                        → [AI Agent (Marina Chatbot)]
+                        → [HTTP Request (Send Message Back to FB)]
+```
+
+#### Node 1: Webhook (Tiếp nhận yêu cầu từ Facebook)
+- **Path**: `facebook-messenger` (Đường dẫn webhook hoàn chỉnh sẽ là: `https://ocean-breeze-resort-chatbot-mvp.loca.lt/webhook/facebook-messenger`)
+- **HTTP Method**: `GET, POST`
+- **Response Mode**: `When Last Node Finishes` (hoặc *Respond to Webhook* tùy thuộc vào luồng verify)
+- **Options**: Bật **`Binary Data`** = `False`
+
+#### Node 2: Switch (Phân loại yêu cầu verify hay tin nhắn mới)
+- **Routing**: Dựa trên phương thức HTTP:
+  - Nếu `{{ $json.headers["x-forwarded-method"] || $json.method }}` = `GET` (Facebook verify webhook) -> Đi ra Nhánh 1.
+  - Nếu là `POST` (Facebook gửi tin nhắn của khách) -> Đi ra Nhánh 2.
+
+#### Nhánh 1 (GET - Verify Webhook):
+- Nối vào node **`Respond to Webhook`**:
+  - **Response Body**: `Custom`
+  - **Custom Response**: `{{ $json.query["hub.challenge"] }}`
+  - **Headers**:
+    - `Content-Type`: `text/plain`
+
+#### Nhánh 2 (POST - Xử lý tin nhắn khách hàng):
+- Thêm node **`Code`** để parse tin nhắn từ body của Facebook:
+  ```javascript
+  const body = items[0].json.body;
+  if (!body.entry || !body.entry[0].messaging) return [];
+  const messagingEvent = body.entry[0].messaging[0];
+  
+  return [{
+    json: {
+      senderId: messagingEvent.sender.id,      // ID của khách hàng trên Messenger (PSID)
+      messageText: messagingEvent.message.text  // Nội dung khách nhắn
+    }
+  }];
+  ```
+
+- **Node tiếp theo: PostgreSQL (Lấy hoặc tạo Session ID)**:
+  - **Operation**: `Execute a SQL Query`
+  - **Query**:
+    ```sql
+    -- Tìm xem khách hàng này đã nhắn tin trước đó chưa
+    WITH existing_session AS (
+        SELECT id FROM chat_sessions 
+        WHERE platform = 'facebook' AND platform_user_id = '{{ $json.senderId }}'
+        LIMIT 1
+    ),
+    -- Nếu chưa, tự động tạo mới 1 Session ID
+    new_session AS (
+        INSERT INTO chat_sessions (platform, platform_user_id)
+        SELECT 'facebook', '{{ $json.senderId }}'
+        WHERE NOT EXISTS (SELECT 1 FROM existing_session)
+        RETURNING id
+    )
+    SELECT id FROM existing_session
+    UNION ALL
+    SELECT id FROM new_session;
+    ```
+
+- **Node tiếp theo: AI Agent (Marina)**:
+  - Bạn nhân bản (Clone) hoặc cấu hình một node **AI Agent** giống hệt Bước 8 (dùng Groq Llama 3.3).
+  - Kết nối node này với các Sub-node: Model, Memory, SQL Tool, RAG Tool.
+  - **Session ID** (Memory): Điền biểu thức `{{ $json.id }}` (lấy từ kết quả câu SQL trên).
+  - **Input Prompt**: Điền `{{ $json.messageText }}`.
+
+- **Node cuối cùng: HTTP Request (Gửi phản hồi về Facebook Messenger)**:
+  - **Method**: `POST`
+  - **URL**: `https://graph.facebook.com/v20.0/me/messages?access_token={{ $env.FB_PAGE_ACCESS_TOKEN }}`
+  - **Body Content Type**: `JSON`
+  - **Body Parameters**:
+    ```json
+    {
+      "recipient": {
+        "id": "{{ $json.senderId }}"
+      },
+      "message": {
+        "text": "{{ $json.output }}"
+      }
+    }
+    ```
+
+---
+
+### Phần C: Kích Hoạt Đăng Ký Webhook Trên Facebook Developer
+
+1. Quay lại trang cấu hình Meta App của bạn.
+2. Tại phần **Webhooks** của Messenger:
+   - **Callback URL**: Điền đường dẫn của bạn: `https://ocean-breeze-resort-chatbot-mvp.loca.lt/webhook/facebook-messenger`
+   - **Verify Token**: Điền đúng token bạn đã thiết lập (ví dụ: `ocean_breeze_verify_token_2025`).
+   - Bấm **Verify and save**.
+3. Tại phần **Subscription Fields**, tìm dòng **`messages`** và **`messaging_postbacks`** → Bấm **Subscribe**.
+
+Bây giờ chatbot Marina đã được kết nối hoàn chỉnh với Facebook Fanpage của bạn! Hãy nhắn thử tin nhắn và trải nghiệm phản hồi tự động tức thì.
+
