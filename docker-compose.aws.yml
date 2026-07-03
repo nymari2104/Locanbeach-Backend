@@ -1,0 +1,108 @@
+# ============================================
+# HOTEL CHATBOT - AWS Production Deployment
+# The House - Lộc An Beach
+# ============================================
+
+services:
+  # ── PostgreSQL with pgvector ──
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: hotel-chatbot-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hotel_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-your_secure_password_here}
+      POSTGRES_DB: ${POSTGRES_DB:-hotel_chatbot}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hotel_admin} -d ${POSTGRES_DB:-hotel_chatbot}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hotel-chatbot-net
+
+  # ── n8n Automation Engine ──
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: hotel-chatbot-n8n
+    restart: always
+    environment:
+      # Database connection (n8n internal data)
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB:-hotel_chatbot}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER:-hotel_admin}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:-your_secure_password_here}
+      DB_POSTGRESDB_SCHEMA: n8n
+      # n8n Config (Production HTTPS)
+      N8N_HOST: ${SUBDOMAIN}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://${SUBDOMAIN}/
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      # Timezone Vietnam
+      GENERIC_TIMEZONE: Asia/Ho_Chi_Minh
+      TZ: Asia/Ho_Chi_Minh
+      # Enable AI features
+      N8N_AI_ENABLED: "true"
+      N8N_RUNNERS_ENABLED: "false"
+      # Environment Variable Access
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY}
+      ZERNIO_API_KEY: ${ZERNIO_API_KEY}
+      N8N_ENFORCE_SETTINGS_FILE_FOR_ENV_VARIABLES: "false"
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      # Whitelist local folder access
+      N8N_RESTRICT_FILE_ACCESS_TO: "/home/node/knowledge"
+      # Facebook API environment variables
+      FB_PAGE_ACCESS_TOKEN: ${FB_PAGE_ACCESS_TOKEN}
+      FB_VERIFY_TOKEN: ${FB_VERIFY_TOKEN}
+      FB_APP_SECRET: ${FB_APP_SECRET}
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./knowledge:/home/node/knowledge
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hotel-chatbot-net
+
+  # ── Caddy Reverse Proxy (Auto SSL via Let's Encrypt) ──
+  caddy:
+    image: caddy:latest
+    container_name: hotel-chatbot-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - n8n
+    networks:
+      - hotel-chatbot-net
+
+volumes:
+  postgres_data:
+    driver: local
+  n8n_data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+
+networks:
+  hotel-chatbot-net:
+    driver: bridge
