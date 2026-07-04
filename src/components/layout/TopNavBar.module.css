@@ -1,0 +1,105 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 50;
+  background-color: rgba(249, 250, 251, 0.8); /* canvas-white/80 */
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-whisper-border);
+  transition: all 0.3s ease;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem var(--spacing-gutter);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo {
+  height: 2.5rem;
+  width: auto;
+}
+
+.brandName {
+  color: var(--color-on-surface);
+  letter-spacing: -0.05em;
+  display: none;
+}
+@media (min-width: 640px) {
+  .brandName {
+    display: block;
+  }
+}
+
+.navLinks {
+  display: none;
+  gap: 2rem;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+@media (min-width: 768px) {
+  .navLinks {
+    display: flex;
+  }
+}
+
+.navLink {
+  color: var(--color-steel-secondary);
+  transition: color 0.3s, opacity 0.3s;
+}
+.navLink:hover {
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+.active {
+  color: var(--color-primary);
+  font-weight: bold;
+  border-bottom: 1px solid var(--color-primary);
+  padding-bottom: 0.25rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.icons {
+  display: none;
+  gap: 1rem;
+  color: var(--color-steel-secondary);
+}
+@media (min-width: 640px) {
+  .icons {
+    display: flex;
+  }
+}
+
+.primaryButton {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--rounded-md);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.primaryButton:hover {
+  background-color: #004395;
+}
+.primaryButton:active {
+  transform: scale(0.95);
+}
