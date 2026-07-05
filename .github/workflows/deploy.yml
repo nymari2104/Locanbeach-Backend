@@ -1,0 +1,33 @@
+name: CI/CD Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to AWS EC2 via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "Starting deployment process..."
+            
+            # Di chuyển vào thư mục dự án trên AWS
+            cd ~/chatbot
+            
+            # Kéo code mới nhất từ GitHub về
+            git pull origin main
+            
+            # Di chuyển vào thư mục Chatbot và chạy lại Docker Compose
+            cd Chatbot
+            docker-compose -f docker-compose.aws.yml up -d
+            
+            echo "Deployment finished successfully!"
