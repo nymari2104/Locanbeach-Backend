@@ -1,0 +1,247 @@
+// =========================================
+// The House - Lộc An Beach
+// Database ERD - dbdiagram.io
+// Final Architecture
+// =========================================
+
+// ─────────────────────────────────────────
+// USERS
+// ─────────────────────────────────────────
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  username varchar(50) [unique, not null]
+  password_hash varchar(255) [not null]
+  full_name varchar(100)
+  email varchar(100) [unique]
+  role user_role [not null]
+  is_active boolean [default: true]
+  created_at timestamptz [default: `now()`]
+  last_login_at timestamptz
+}
+
+// ─────────────────────────────────────────
+// ACCOMMODATION CATEGORIES (Shared data)
+// ─────────────────────────────────────────
+Table accommodation_categories {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [not null]
+  code varchar(50) [unique, not null]
+  type accommodation_type [not null]
+  description text
+  base_price decimal(12,2) [not null]
+  max_guests int [not null]
+  area_sqm decimal(8,2)
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// ACCOMMODATIONS (Physical units)
+// ─────────────────────────────────────────
+Table accommodations {
+  id uuid [pk, default: `gen_random_uuid()`]
+  category_id uuid [not null, ref: > accommodation_categories.id]
+  code varchar(30) [unique, not null, note: '101,102,C01,C02']
+  metadata jsonb
+  status accommodation_status [not null, default: 'ACTIVE']
+  operational_status operational_status [not null, default: 'VACANT']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// AMENITIES
+// ─────────────────────────────────────────
+Table amenities {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [not null]
+  icon varchar(100)
+  created_at timestamptz [default: `now()`]
+}
+
+Table category_amenities {
+  category_id uuid [ref: > accommodation_categories.id]
+  amenity_id uuid [ref: > amenities.id]
+  indexes {
+    (category_id, amenity_id) [pk]
+  }
+}
+
+// ─────────────────────────────────────────
+// IMAGES (Separated by entity)
+// ─────────────────────────────────────────
+Table category_images {
+  id uuid [pk, default: `gen_random_uuid()`]
+  category_id uuid [not null, ref: > accommodation_categories.id]
+  url text [not null]
+  is_cover boolean [default: false]
+  sort_order int [default: 0]
+  uploaded_by uuid [ref: > users.id]
+  uploaded_at timestamptz [default: `now()`]
+}
+
+Table service_images {
+  id uuid [pk, default: `gen_random_uuid()`]
+  service_id uuid [not null, ref: > services.id]
+  url text [not null]
+  is_cover boolean [default: false]
+  sort_order int [default: 0]
+  uploaded_by uuid [ref: > users.id]
+  uploaded_at timestamptz [default: `now()`]
+}
+
+Table combo_images {
+  id uuid [pk, default: `gen_random_uuid()`]
+  combo_id uuid [not null, ref: > combos_events.id]
+  url text [not null]
+  is_cover boolean [default: false]
+  sort_order int [default: 0]
+  uploaded_by uuid [ref: > users.id]
+  uploaded_at timestamptz [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// BOOKINGS
+// ─────────────────────────────────────────
+Table bookings {
+  id uuid [pk, default: `gen_random_uuid()`]
+  accommodation_id uuid [not null, ref: > accommodations.id]
+  confirmed_by uuid [ref: > users.id]
+  guest_name varchar(100) [not null]
+  guest_phone varchar(20) [not null]
+  guest_email varchar(100)
+  checkin_date date [not null]
+  checkout_date date [not null]
+  guests_count int [not null, default: 1]
+  total_amount decimal(12,2) [not null]
+  deposit_amount decimal(12,2)
+  status booking_status [not null, default: 'PENDING_DEPOSIT']
+  notes text
+  cancelled_at timestamptz
+  cancelled_reason text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// BOOKING STATUS HISTORY
+// ─────────────────────────────────────────
+Table booking_status_history {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [not null, ref: > bookings.id]
+  changed_by_user_id uuid [ref: > users.id]
+  old_status booking_status
+  new_status booking_status [not null]
+  note text
+  changed_at timestamptz [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// SERVICES
+// ─────────────────────────────────────────
+Table services {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [not null]
+  group service_group [not null]
+  description text
+  price decimal(12,2)
+  operating_hours varchar(50)
+  status service_status [not null, default: 'ACTIVE']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// COMBOS / EVENTS
+// ─────────────────────────────────────────
+Table combos_events {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(150) [not null]
+  type combo_event_type [not null]
+  description text
+  price decimal(12,2)
+  start_date date
+  end_date date
+  status service_status [not null, default: 'ACTIVE']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// BOOKING SERVICES
+// ─────────────────────────────────────────
+Table booking_services {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [not null, ref: > bookings.id]
+  service_id uuid [not null, ref: > services.id]
+  quantity int [not null, default: 1]
+  unit_price decimal(12,2) [not null]
+  note text
+  created_at timestamptz [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// BOOKING COMBOS
+// ─────────────────────────────────────────
+Table booking_combos {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [not null, ref: > bookings.id]
+  combo_id uuid [not null, ref: > combos_events.id]
+  quantity int [not null, default: 1]
+  unit_price decimal(12,2) [not null]
+  note text
+  created_at timestamptz [default: `now()`]
+}
+
+// =========================================
+// ENUMS
+// =========================================
+Enum accommodation_type {
+  ROOM
+  CAMPING
+  GLAMPING
+}
+
+Enum accommodation_status {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+Enum operational_status {
+  VACANT
+  OCCUPIED
+  CLEANING
+  MAINTENANCE
+}
+
+Enum booking_status {
+  PENDING_DEPOSIT
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  COMPLETED
+  CANCELLED
+}
+
+Enum service_group {
+  SPA
+  RESTAURANT
+  ENTERTAINMENT
+  UTILITY
+}
+
+Enum service_status {
+  ACTIVE
+  INACTIVE
+}
+
+Enum combo_event_type {
+  COMBO
+  EVENT
+}
+
+Enum user_role {
+  ADMIN
+  STAFF
+}
