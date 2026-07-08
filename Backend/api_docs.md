@@ -49,7 +49,22 @@ Trả về danh sách các Loại phòng kèm số lượng phòng trống tươ
         "basePrice": 1500000.00,
         "maxGuests": 2,
         "areaSqm": 35.50,
-        "availableRoomsCount": 5
+        "availableRoomsCount": 5,
+        "images": [
+          {
+            "id": "e0b2d3c4-5678-90ab-cdef-1234567890ab",
+            "url": "https://res.cloudinary.com/demo/image/upload/v1234567890/the-house/abc-def.jpg",
+            "isCover": true,
+            "sortOrder": 0
+          }
+        ],
+        "amenities": [
+          {
+            "id": "4a2d3e4f-5678-90ab-cdef-1234567890ab",
+            "name": "Wifi Tốc độ cao",
+            "icon": "wifi-icon"
+          }
+        ]
       }
     ],
     "message": "Tìm kiếm phòng trống thành công"
