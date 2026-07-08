@@ -1,0 +1,797 @@
+{
+	"info": {
+		"_postman_id": "d9b28f89-8d63-4b6d-a365-27a3c7b39678",
+		"name": "The House Resort API (Full Tests)",
+		"description": "Full Postman collection for The House Resort with automated tests and variable chaining.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Categories",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Category By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"{{categoryId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201 or 200', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test('Category created and ID saved', function () {",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.data).to.have.property('id');",
+									"    pm.collectionVariables.set('categoryId', res.data.id);",
+									"    console.log('✅ Saved categoryId: ' + res.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Phòng Deluxe Hướng Biển\",\n    \"code\": \"DLX-SEA-{{$randomInt}}\",\n    \"type\": \"ROOM\",\n    \"description\": \"Phòng tiêu chuẩn có ban công nhìn ra biển.\",\n    \"basePrice\": 1500000,\n    \"maxGuests\": 2,\n    \"areaSqm\": 35.5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Phòng Deluxe Hướng Biển (Updated)\",\n    \"code\": \"DLX-SEA-UPD\",\n    \"type\": \"ROOM\",\n    \"description\": \"Phòng Deluxe hướng biển cực đẹp.\",\n    \"basePrice\": 1800000,\n    \"maxGuests\": 2,\n    \"areaSqm\": 38.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"{{categoryId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Accommodations",
+			"item": [
+				{
+					"name": "Get All Accommodations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/accommodations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"accommodations"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Accommodation By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/accommodations/{{accommodationId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"accommodations",
+								"{{accommodationId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Accommodation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Accommodation created', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"    const res = pm.response.json();",
+									"    pm.collectionVariables.set('accommodationId', res.data.id);",
+									"    console.log('✅ Saved accommodationId: ' + res.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categoryId\": \"{{categoryId}}\",\n    \"code\": \"ROOM-{{$randomInt}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/accommodations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"accommodations"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Search & Booking",
+			"item": [
+				{
+					"name": "Search Available Rooms",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const today = new Date();",
+									"let tomorrow = new Date(today);",
+									"tomorrow.setDate(tomorrow.getDate() + 1);",
+									"let nextWeek = new Date(today);",
+									"nextWeek.setDate(nextWeek.getDate() + 3);",
+									"",
+									"pm.collectionVariables.set('checkinDate', tomorrow.toISOString().split('T')[0] + 'T14:00:00');",
+									"pm.collectionVariables.set('checkoutDate', nextWeek.toISOString().split('T')[0] + 'T12:00:00');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Search successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/search/accommodations?checkinDate={{checkinDate}}&checkoutDate={{checkoutDate}}&guestsCount=2&minPrice=0&maxPrice=5000000&type=ROOM",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"search",
+								"accommodations"
+							],
+							"query": [
+								{
+									"key": "checkinDate",
+									"value": "{{checkinDate}}"
+								},
+								{
+									"key": "checkoutDate",
+									"value": "{{checkoutDate}}"
+								},
+								{
+									"key": "guestsCount",
+									"value": "2"
+								},
+								{
+									"key": "minPrice",
+									"value": "0"
+								},
+								{
+									"key": "maxPrice",
+									"value": "5000000"
+								},
+								{
+									"key": "type",
+									"value": "ROOM"
+								},
+								{
+									"key": "amenityIds",
+									"value": "",
+									"description": "Optional: danh sách UUID tiện ích, phân tách bằng dấu phẩy",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Hold Room (10 mins)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Hold created successfully', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.data).to.have.property('holdId');",
+									"    pm.collectionVariables.set('holdId', res.data.holdId);",
+									"    console.log('✅ Saved holdId: ' + res.data.holdId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categoryId\": \"{{categoryId}}\",\n    \"checkinDate\": \"{{checkinDate}}\",\n    \"checkoutDate\": \"{{checkoutDate}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bookings/hold",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bookings",
+								"hold"
+							]
+						}
+					}
+				},
+				{
+					"name": "Confirm Booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Booking confirmed successfully', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.data).to.have.property('bookingId');",
+									"    pm.expect(res.data.status).to.eql('PENDING_DEPOSIT');",
+									"    pm.collectionVariables.set('bookingId', res.data.bookingId);",
+									"    console.log('✅ Booking successfully confirmed! Booking ID: ' + res.data.bookingId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"holdId\": \"{{holdId}}\",\n    \"guestName\": \"Nguyen Van A\",\n    \"guestPhone\": \"0987654321\",\n    \"guestEmail\": \"a@example.com\",\n    \"guestsCount\": 2,\n    \"notes\": \"Khách đến trễ\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bookings/confirm",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"bookings",
+								"confirm"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Services",
+			"item": [
+				{
+					"name": "Get All Services",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/services",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"services"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Service By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/services/{{serviceId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"services",
+								"{{serviceId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Service created', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"    const res = pm.response.json();",
+									"    pm.collectionVariables.set('serviceId', res.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Spa Body Massage\",\n    \"group\": \"SPA\",\n    \"description\": \"Massage toàn thân 60 phút\",\n    \"price\": 500000,\n    \"operatingHours\": \"09:00 - 22:00\",\n    \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/services",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"services"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Service",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Spa Body Massage (Updated)\",\n    \"group\": \"SPA\",\n    \"description\": \"Massage toàn thân 90 phút\",\n    \"price\": 700000,\n    \"operatingHours\": \"08:00 - 22:00\",\n    \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/services/{{serviceId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"services",
+								"{{serviceId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Combos",
+			"item": [
+				{
+					"name": "Get All Combos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/combos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"combos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Combo By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/combos/{{comboId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"combos",
+								"{{comboId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Combo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Combo created', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"    const res = pm.response.json();",
+									"    pm.collectionVariables.set('comboId', res.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Combo Trăng Mật\",\n    \"type\": \"COMBO\",\n    \"description\": \"Combo đặc biệt cho cặp đôi gồm phòng nghỉ và spa\",\n    \"price\": 2000000,\n    \"startDate\": \"2026-08-01\",\n    \"endDate\": \"2026-08-31\",\n    \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/combos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"combos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Combo",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Combo Trăng Mật (Updated)\",\n    \"type\": \"COMBO\",\n    \"description\": \"Combo đặc biệt nâng cấp phòng Deluxe\",\n    \"price\": 2500000,\n    \"startDate\": \"2026-08-01\",\n    \"endDate\": \"2026-08-31\",\n    \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/combos/{{comboId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"combos",
+								"{{comboId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Amenities",
+			"item": [
+				{
+					"name": "Get All Amenities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/amenities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"amenities"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Amenity By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/amenities/{{amenityId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"amenities",
+								"{{amenityId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Amenity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Amenity created', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"    const res = pm.response.json();",
+									"    pm.collectionVariables.set('amenityId', res.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Wifi Tốc độ cao\",\n    \"icon\": \"wifi-icon\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/amenities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"amenities"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Amenity",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Wifi Tốc độ cao (Updated)\",\n    \"icon\": \"wifi-fast-icon\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/amenities/{{amenityId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"amenities",
+								"{{amenityId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Amenity",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/amenities/{{amenityId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"amenities",
+								"{{amenityId}}"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "categoryId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "accommodationId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "checkinDate",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "checkoutDate",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "holdId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bookingId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "serviceId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "comboId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "amenityId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

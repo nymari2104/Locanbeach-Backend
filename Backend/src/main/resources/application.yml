@@ -1,6 +1,8 @@
 spring:
   application:
     name: locanbeach-backend
+  config:
+    import: optional:file:../.env[.properties]
 
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:hotel_chatbot}
@@ -29,3 +31,8 @@ springdoc:
 
 server:
   port: 8080
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:demo}
+  api-key: ${CLOUDINARY_API_KEY:demo}
+  api-secret: ${CLOUDINARY_API_SECRET:demo}

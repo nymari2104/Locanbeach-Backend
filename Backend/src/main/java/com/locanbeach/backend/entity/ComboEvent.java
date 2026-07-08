@@ -52,6 +52,9 @@ public class ComboEvent {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private ServiceStatus status = ServiceStatus.ACTIVE;
 
+    @jakarta.persistence.OneToMany(mappedBy = "combo", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<ComboImage> images = new java.util.ArrayList<>();
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

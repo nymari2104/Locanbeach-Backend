@@ -1,0 +1,8 @@
+{
+  "name": "Spa Toàn Thân",
+  "group": "SPA",
+  "description": "Massage 60 phút trị liệu",
+  "price": 500000,
+  "operatingHours": "09:00 - 22:00",
+  "status": "ACTIVE"
+}

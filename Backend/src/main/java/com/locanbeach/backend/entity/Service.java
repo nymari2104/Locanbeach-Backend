@@ -48,6 +48,9 @@ public class Service {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private ServiceStatus status = ServiceStatus.ACTIVE;
 
+    @jakarta.persistence.OneToMany(mappedBy = "service", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<ServiceImage> images = new java.util.ArrayList<>();
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

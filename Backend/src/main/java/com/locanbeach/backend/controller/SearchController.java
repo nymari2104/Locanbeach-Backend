@@ -8,8 +8,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,8 +23,8 @@ public class SearchController {
 
     SearchService searchService;
 
-    @PostMapping("/accommodations")
-    public ApiResponse<List<SearchCategoryResultResponse>> searchAvailable(@Valid @RequestBody SearchAvailableRequest request) {
+    @GetMapping("/accommodations")
+    public ApiResponse<List<SearchCategoryResultResponse>> searchAvailable(@Valid @ModelAttribute SearchAvailableRequest request) {
         return ApiResponse.success("Tìm kiếm phòng trống thành công", searchService.searchAvailableCategories(request));
     }
 }

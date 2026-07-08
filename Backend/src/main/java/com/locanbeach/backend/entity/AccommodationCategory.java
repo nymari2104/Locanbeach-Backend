@@ -37,6 +37,17 @@ public class AccommodationCategory {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private AccommodationType type;
 
+    @jakarta.persistence.ManyToMany(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinTable(
+        name = "category_amenities",
+        joinColumns = @jakarta.persistence.JoinColumn(name = "category_id"),
+        inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "amenity_id")
+    )
+    private java.util.Set<Amenity> amenities = new java.util.HashSet<>();
+
+    @jakarta.persistence.OneToMany(mappedBy = "category", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<CategoryImage> images = new java.util.ArrayList<>();
+
     @Column(columnDefinition = "TEXT")
     private String description;
 

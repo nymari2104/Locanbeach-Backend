@@ -41,6 +41,13 @@ public class AccommodationService {
         Accommodation entity = new Accommodation();
         BeanUtils.copyProperties(dto, entity, "id", "categoryId", "categoryName");
 
+        if (dto.getStatus() == null) {
+            entity.setStatus(com.locanbeach.backend.entity.enums.AccommodationStatus.ACTIVE);
+        }
+        if (dto.getOperationalStatus() == null) {
+            entity.setOperationalStatus(com.locanbeach.backend.entity.enums.OperationalStatus.VACANT);
+        }
+
         AccommodationCategory category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new AppException(
                         AccommodationErrorCode.CATEGORY_NOT_FOUND,

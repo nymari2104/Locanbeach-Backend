@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,6 +50,39 @@ public class SearchService {
                     .collect(Collectors.toList());
         }
 
+        // 4. Lọc theo khoảng giá tối thiểu nếu có
+        if (request.getMinPrice() != null) {
+            availableAccommodations = availableAccommodations.stream()
+                    .filter(a -> a.getCategory().getBasePrice().compareTo(request.getMinPrice()) >= 0)
+                    .collect(Collectors.toList());
+        }
+
+        // 5. Lọc theo khoảng giá tối đa nếu có
+        if (request.getMaxPrice() != null) {
+            availableAccommodations = availableAccommodations.stream()
+                    .filter(a -> a.getCategory().getBasePrice().compareTo(request.getMaxPrice()) <= 0)
+                    .collect(Collectors.toList());
+        }
+
+        // 6. Lọc theo loại hình (ROOM, CAMPING, GLAMPING) nếu có
+        if (request.getType() != null) {
+            availableAccommodations = availableAccommodations.stream()
+                    .filter(a -> a.getCategory().getType() == request.getType())
+                    .collect(Collectors.toList());
+        }
+
+        // 7. Lọc theo danh sách tiện ích nếu có
+        if (request.getAmenityIds() != null && !request.getAmenityIds().isEmpty()) {
+            availableAccommodations = availableAccommodations.stream()
+                    .filter(a -> {
+                        java.util.Set<UUID> categoryAmenityIds = a.getCategory().getAmenities().stream()
+                                .map(com.locanbeach.backend.entity.Amenity::getId)
+                                .collect(Collectors.toSet());
+                        return categoryAmenityIds.containsAll(request.getAmenityIds());
+                    })
+                    .collect(Collectors.toList());
+        }
+
         // 4. Nhóm theo AccommodationCategory và đếm số lượng phòng
         Map<AccommodationCategory, Long> categoryCountMap = availableAccommodations.stream()
                 .collect(Collectors.groupingBy(Accommodation::getCategory, Collectors.counting()));
@@ -67,6 +101,19 @@ public class SearchService {
                             .maxGuests(category.getMaxGuests())
                             .areaSqm(category.getAreaSqm())
                             .availableRoomsCount(availableCount)
+                            .images(category.getImages() != null ? category.getImages().stream().map(img -> com.locanbeach.backend.dto.ImageDTO.builder()
+                                    .id(img.getId())
+                                    .url(img.getUrl())
+                                    .isCover(img.getIsCover())
+                                    .sortOrder(img.getSortOrder())
+                                    .build()).collect(Collectors.toList()) : java.util.Collections.emptyList())
+                            .amenities(category.getAmenities() != null ? category.getAmenities().stream().map(a -> {
+                                com.locanbeach.backend.dto.AmenityDTO amenityDto = new com.locanbeach.backend.dto.AmenityDTO();
+                                amenityDto.setId(a.getId());
+                                amenityDto.setName(a.getName());
+                                amenityDto.setIcon(a.getIcon());
+                                return amenityDto;
+                            }).collect(Collectors.toList()) : java.util.Collections.emptyList())
                             .build();
                 })
                 .collect(Collectors.toList());

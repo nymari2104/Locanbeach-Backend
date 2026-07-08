@@ -1,0 +1,115 @@
+package com.locanbeach.backend.service;
+
+import com.locanbeach.backend.common.exception.AppException;
+import com.locanbeach.backend.common.exception.errorcode.GeneralErrorCode;
+import com.locanbeach.backend.dto.request.BookingConfirmRequest;
+import com.locanbeach.backend.dto.request.RoomHoldRequest;
+import com.locanbeach.backend.dto.response.BookingResponse;
+import com.locanbeach.backend.dto.response.RoomHoldResponse;
+import com.locanbeach.backend.entity.Accommodation;
+import com.locanbeach.backend.entity.Booking;
+import com.locanbeach.backend.entity.RoomHold;
+import com.locanbeach.backend.entity.enums.BookingStatus;
+import com.locanbeach.backend.repository.AccommodationRepository;
+import com.locanbeach.backend.repository.BookingRepository;
+import com.locanbeach.backend.repository.RoomHoldRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class BookingService {
+
+    private final AccommodationRepository accommodationRepository;
+    private final RoomHoldRepository roomHoldRepository;
+    private final BookingRepository bookingRepository;
+
+    @Transactional
+    public RoomHoldResponse holdRoom(RoomHoldRequest request) {
+        if (!request.getCheckoutDate().isAfter(request.getCheckinDate())) {
+            throw new AppException(GeneralErrorCode.INVALID_INPUT, "Check-out date must be after check-in date");
+        }
+
+        // Lock 1 available accommodation for the requested dates
+        Accommodation accommodation = accommodationRepository.findAvailableAccommodationWithLock(
+                request.getCategoryId(), request.getCheckinDate(), request.getCheckoutDate());
+        
+        if (accommodation == null) {
+            throw new AppException(GeneralErrorCode.RESOURCE_NOT_FOUND, "No available rooms for the selected category and dates");
+        }
+
+        RoomHold roomHold = new RoomHold();
+        roomHold.setAccommodation(accommodation);
+        roomHold.setCheckinDate(request.getCheckinDate());
+        roomHold.setCheckoutDate(request.getCheckoutDate());
+        roomHold.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+
+        roomHold = roomHoldRepository.save(roomHold);
+
+        return RoomHoldResponse.builder()
+                .holdId(roomHold.getId())
+                .expiresAt(roomHold.getExpiresAt())
+                .build();
+    }
+
+    @Transactional
+    public BookingResponse confirmBooking(BookingConfirmRequest request) {
+        RoomHold roomHold = roomHoldRepository.findById(request.getHoldId())
+                .orElseThrow(() -> new AppException(GeneralErrorCode.RESOURCE_NOT_FOUND, "Hold not found or invalid"));
+
+        if (roomHold.getExpiresAt().isBefore(LocalDateTime.now())) {
+            roomHoldRepository.delete(roomHold);
+            throw new AppException(GeneralErrorCode.INVALID_INPUT, "Hold has expired. Please try booking again.");
+        }
+
+        Accommodation accommodation = roomHold.getAccommodation();
+        
+        long days = ChronoUnit.DAYS.between(
+                roomHold.getCheckinDate().toLocalDate(), 
+                roomHold.getCheckoutDate().toLocalDate());
+        if (days <= 0) days = 1;
+        
+        BigDecimal totalAmount = accommodation.getCategory().getBasePrice().multiply(BigDecimal.valueOf(days));
+        BigDecimal depositAmount = totalAmount.multiply(new BigDecimal("0.3")); // 30% deposit
+
+        Booking booking = new Booking();
+        booking.setAccommodation(accommodation);
+        booking.setGuestName(request.getGuestName());
+        booking.setGuestPhone(request.getGuestPhone());
+        booking.setGuestEmail(request.getGuestEmail());
+        booking.setCheckinDate(roomHold.getCheckinDate());
+        booking.setCheckoutDate(roomHold.getCheckoutDate());
+        booking.setGuestsCount(request.getGuestsCount());
+        booking.setNotes(request.getNotes());
+        booking.setTotalAmount(totalAmount);
+        booking.setDepositAmount(depositAmount);
+        booking.setStatus(BookingStatus.PENDING_DEPOSIT);
+
+        booking = bookingRepository.save(booking);
+        
+        // Remove the hold since we created the booking
+        roomHoldRepository.delete(roomHold);
+
+        return BookingResponse.builder()
+                .bookingId(booking.getId())
+                .accommodationId(accommodation.getId())
+                .accommodationCode(accommodation.getCode())
+                .categoryId(accommodation.getCategory().getId())
+                .categoryName(accommodation.getCategory().getName())
+                .guestName(booking.getGuestName())
+                .guestPhone(booking.getGuestPhone())
+                .checkinDate(booking.getCheckinDate())
+                .checkoutDate(booking.getCheckoutDate())
+                .guestsCount(booking.getGuestsCount())
+                .totalAmount(booking.getTotalAmount())
+                .depositAmount(booking.getDepositAmount())
+                .status(booking.getStatus())
+                .build();
+    }
+}

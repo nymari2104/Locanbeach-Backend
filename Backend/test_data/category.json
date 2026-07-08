@@ -1,0 +1,10 @@
+{
+  "name": "Phòng Deluxe Hướng Biển",
+  "code": "DLX-SEA",
+  "type": "ROOM",
+  "description": "Phòng tiêu chuẩn có ban công nhìn ra biển.",
+  "basePrice": 1500000,
+  "maxGuests": 2,
+  "areaSqm": 35.5,
+  "amenityIds": ["THAY_BANG_UUID_TIEN_ICH"]
+}

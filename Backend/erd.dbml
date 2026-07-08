@@ -110,8 +110,8 @@ Table bookings {
   guest_name varchar(100) [not null]
   guest_phone varchar(20) [not null]
   guest_email varchar(100)
-  checkin_date date [not null]
-  checkout_date date [not null]
+  checkin_date timestamptz [not null]
+  checkout_date timestamptz [not null]
   guests_count int [not null, default: 1]
   total_amount decimal(12,2) [not null]
   deposit_amount decimal(12,2)
@@ -119,6 +119,19 @@ Table bookings {
   notes text
   cancelled_at timestamptz
   cancelled_reason text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// ROOM HOLDS (Temporary locks)
+// ─────────────────────────────────────────
+Table room_holds {
+  id uuid [pk, default: `gen_random_uuid()`]
+  accommodation_id uuid [not null, ref: > accommodations.id]
+  checkin_date timestamptz [not null]
+  checkout_date timestamptz [not null]
+  expires_at timestamptz [not null]
   created_at timestamptz [default: `now()`]
   updated_at timestamptz [default: `now()`]
 }

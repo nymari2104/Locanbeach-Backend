@@ -1,5 +1,6 @@
 package com.locanbeach.backend.dto.response;
 
+import com.locanbeach.backend.dto.ImageDTO;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,4 +22,7 @@ public class SearchCategoryResultResponse {
     Integer maxGuests;
     BigDecimal areaSqm;
     long availableRoomsCount;
+    List<ImageDTO> images;
+    List<com.locanbeach.backend.dto.AmenityDTO> amenities;
 }
+

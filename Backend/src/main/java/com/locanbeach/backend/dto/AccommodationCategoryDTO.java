@@ -16,4 +16,7 @@ public class AccommodationCategoryDTO {
     private BigDecimal basePrice;
     private Integer maxGuests;
     private BigDecimal areaSqm;
+    private java.util.List<ImageDTO> images = new java.util.ArrayList<>();
+    private java.util.Set<UUID> amenityIds = new java.util.HashSet<>();
+    private java.util.List<AmenityDTO> amenities = new java.util.ArrayList<>();
 }

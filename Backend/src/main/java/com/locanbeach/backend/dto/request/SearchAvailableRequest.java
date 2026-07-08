@@ -16,13 +16,21 @@ public class SearchAvailableRequest {
 
     @NotNull(message = "Check-in date is required")
     @FutureOrPresent(message = "Check-in date must be today or in the future")
-    LocalDate checkinDate;
+    java.time.LocalDateTime checkinDate;
 
     @NotNull(message = "Check-out date is required")
-    LocalDate checkoutDate;
+    java.time.LocalDateTime checkoutDate;
 
     @Min(value = 1, message = "Guests count must be at least 1")
     Integer guestsCount;
 
     UUID categoryId; // Optional filter by specific category
+
+    java.math.BigDecimal minPrice;
+
+    java.math.BigDecimal maxPrice;
+
+    com.locanbeach.backend.entity.enums.AccommodationType type;
+
+    java.util.List<UUID> amenityIds;
 }

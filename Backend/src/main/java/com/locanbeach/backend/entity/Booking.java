@@ -49,10 +49,10 @@ public class Booking {
     private String guestEmail;
 
     @Column(name = "checkin_date", nullable = false)
-    private LocalDate checkinDate;
+    private java.time.LocalDateTime checkinDate;
 
     @Column(name = "checkout_date", nullable = false)
-    private LocalDate checkoutDate;
+    private java.time.LocalDateTime checkoutDate;
 
     @Column(name = "guests_count", nullable = false)
     private Integer guestsCount = 1;

@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class AccommodationCategoryService {
 
     private final AccommodationCategoryRepository repository;
+    private final com.locanbeach.backend.repository.AmenityRepository amenityRepository;
 
     @Transactional(readOnly = true)
     public List<AccommodationCategoryDTO> getAllCategories() {
@@ -36,7 +37,11 @@ public class AccommodationCategoryService {
     @Transactional
     public AccommodationCategoryDTO createCategory(AccommodationCategoryDTO dto) {
         AccommodationCategory entity = new AccommodationCategory();
-        BeanUtils.copyProperties(dto, entity, "id");
+        BeanUtils.copyProperties(dto, entity, "id", "amenities", "images");
+        if (dto.getAmenityIds() != null && !dto.getAmenityIds().isEmpty()) {
+            List<com.locanbeach.backend.entity.Amenity> amenities = amenityRepository.findAllById(dto.getAmenityIds());
+            entity.setAmenities(new java.util.HashSet<>(amenities));
+        }
         return convertToDto(repository.save(entity));
     }
 
@@ -46,13 +51,42 @@ public class AccommodationCategoryService {
                 .orElseThrow(() -> new AppException(
                         AccommodationErrorCode.CATEGORY_NOT_FOUND,
                         "Category not found with id: " + id));
-        BeanUtils.copyProperties(dto, entity, "id");
+        BeanUtils.copyProperties(dto, entity, "id", "amenities", "images");
+        if (dto.getAmenityIds() != null) {
+            if (dto.getAmenityIds().isEmpty()) {
+                entity.getAmenities().clear();
+            } else {
+                List<com.locanbeach.backend.entity.Amenity> amenities = amenityRepository.findAllById(dto.getAmenityIds());
+                entity.setAmenities(new java.util.HashSet<>(amenities));
+            }
+        }
         return convertToDto(repository.save(entity));
     }
 
     private AccommodationCategoryDTO convertToDto(AccommodationCategory entity) {
         AccommodationCategoryDTO dto = new AccommodationCategoryDTO();
         BeanUtils.copyProperties(entity, dto);
+        if (entity.getImages() != null) {
+            dto.setImages(entity.getImages().stream().map(img -> com.locanbeach.backend.dto.ImageDTO.builder()
+                    .id(img.getId())
+                    .url(img.getUrl())
+                    .isCover(img.getIsCover())
+                    .sortOrder(img.getSortOrder())
+                    .build()).collect(Collectors.toList()));
+        }
+        if (entity.getAmenities() != null) {
+            dto.setAmenities(entity.getAmenities().stream().map(a -> {
+                com.locanbeach.backend.dto.AmenityDTO amenityDto = new com.locanbeach.backend.dto.AmenityDTO();
+                amenityDto.setId(a.getId());
+                amenityDto.setName(a.getName());
+                amenityDto.setIcon(a.getIcon());
+                return amenityDto;
+            }).collect(Collectors.toList()));
+
+            dto.setAmenityIds(entity.getAmenities().stream()
+                    .map(com.locanbeach.backend.entity.Amenity::getId)
+                    .collect(Collectors.toSet()));
+        }
         return dto;
     }
 }
