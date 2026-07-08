@@ -124,7 +124,6 @@ Table combo_images {
 Table bookings {
   id uuid [pk, default: `gen_random_uuid()`]
   accommodation_id uuid [not null, ref: > accommodations.id]
-  primary_guest_id uuid [ref: > guests.id]
   confirmed_by uuid [ref: > users.id]
   guest_name varchar(100) [not null]
   guest_phone varchar(20) [not null]
