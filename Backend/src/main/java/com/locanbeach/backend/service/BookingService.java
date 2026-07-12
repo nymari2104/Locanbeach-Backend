@@ -112,4 +112,25 @@ public class BookingService {
                 .status(booking.getStatus())
                 .build();
     }
+
+    public org.springframework.data.domain.Page<BookingResponse> getBookings(
+            String search, BookingStatus status, LocalDateTime startDate, LocalDateTime endDate, org.springframework.data.domain.Pageable pageable) {
+        
+        return bookingRepository.findBookingsWithFilters(search, status, startDate, endDate, pageable)
+                .map(booking -> BookingResponse.builder()
+                        .bookingId(booking.getId())
+                        .accommodationId(booking.getAccommodation().getId())
+                        .accommodationCode(booking.getAccommodation().getCode())
+                        .categoryId(booking.getAccommodation().getCategory().getId())
+                        .categoryName(booking.getAccommodation().getCategory().getName())
+                        .guestName(booking.getGuestName())
+                        .guestPhone(booking.getGuestPhone())
+                        .checkinDate(booking.getCheckinDate())
+                        .checkoutDate(booking.getCheckoutDate())
+                        .guestsCount(booking.getGuestsCount())
+                        .totalAmount(booking.getTotalAmount())
+                        .depositAmount(booking.getDepositAmount())
+                        .status(booking.getStatus())
+                        .build());
+    }
 }

@@ -7,7 +7,7 @@ import styles from "./page.module.css";
 
 type BookingResponse = ConfirmBookingResponse; // Reusing the type since they have the same fields
 
-type TabType = 'ALL' | 'COMING' | 'STAYING' | 'LEFT' | 'CANCELLED';
+type TabType = 'ALL' | 'COMING' | 'ARRIVED' | 'STAYING' | 'LEAVING' | 'LEFT' | 'CANCELLED' | 'MY_BOOKINGS';
 
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('ALL');
