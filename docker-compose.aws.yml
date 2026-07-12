@@ -110,6 +110,8 @@ services:
       - ./Chatbot/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    environment:
+      SUBDOMAIN: ${SUBDOMAIN}
     depends_on:
       - n8n
     networks:

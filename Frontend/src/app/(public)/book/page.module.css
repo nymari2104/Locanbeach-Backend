@@ -268,11 +268,22 @@
 .featuredCard {
   grid-column: span 1;
 }
+@media (min-width: 768px) {
+  .featuredCard {
+    grid-column: span 2;
+    flex-direction: row;
+  }
+}
+@media (min-width: 1024px) {
+  .featuredCard {
+    grid-column: span 2;
+  }
+}
 
 .imageWrapper {
   position: relative;
   aspect-ratio: 16 / 9;
-  max-height: 200px;
+  max-height: 220px;
   flex-shrink: 0;
   width: 100%;
   overflow: hidden;
@@ -281,6 +292,12 @@
 @media (min-width: 768px) {
   .imageWrapper {
     max-height: 240px;
+  }
+  .featuredCard .imageWrapper {
+    max-height: none;
+    width: 50%;
+    height: 100%;
+    aspect-ratio: auto;
   }
 }
 
@@ -295,9 +312,10 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(4px);
   color: var(--color-primary);
+  font-weight: 700;
   padding: 0.25rem 0.75rem;
   border-radius: var(--rounded-full);
   border: 1px solid var(--color-whisper-border);
@@ -312,7 +330,11 @@
 }
 @media (min-width: 768px) {
   .roomDetails {
-    padding: 1.5rem;
+    padding: 1.25rem;
+  }
+  .featuredCard .roomDetails {
+    width: 50%;
+    padding: 2rem;
   }
 }
 

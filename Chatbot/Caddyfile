@@ -1,0 +1,11 @@
+{$SUBDOMAIN} {
+    # Route for Spring Boot Backend API
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+
+    # Route for n8n Chatbot
+    handle {
+        reverse_proxy n8n:5678
+    }
+}
