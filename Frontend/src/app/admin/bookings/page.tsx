@@ -19,13 +19,25 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
+  const [selectedBooking, setSelectedBooking] = useState<BookingResponse | null>(null);
+
+  const tabs = [
+    { id: 'ALL' as TabType, label: 'Tất cả đơn đặt' },
+    { id: 'COMING' as TabType, label: 'Khách sẽ đến' },
+    { id: 'ARRIVED' as TabType, label: 'Khách đã đến' },
+    { id: 'STAYING' as TabType, label: 'Khách đang ở' },
+    { id: 'LEAVING' as TabType, label: 'Khách sẽ đi' },
+    { id: 'LEFT' as TabType, label: 'Khách đã đi' },
+    { id: 'CANCELLED' as TabType, label: 'Đã hủy' },
+    { id: 'MY_BOOKINGS' as TabType, label: 'Booking tạo bởi mình' },
+  ];
 
   // DUMMY DATA FOR UI PREVIEW
   const dummyBookings: BookingResponse[] = [
     {
       bookingId: "b1234567-89ab-cdef-0123-456789abcdef",
       accommodationId: "a1",
-      accommodationCode: "108 (Phòng)",
+      accommodationCode: "108",
       categoryId: "c1",
       categoryName: "Phòng Deluxe",
       guestName: "Anh Khanh",
@@ -40,7 +52,7 @@ export default function BookingsPage() {
     {
       bookingId: "b2234567-89ab-cdef-0123-456789abcdef",
       accommodationId: "a2",
-      accommodationCode: "114 (Phòng)",
+      accommodationCode: "114",
       categoryId: "c2",
       categoryName: "Lữ hành",
       guestName: "Ngọc Anh",
@@ -55,7 +67,7 @@ export default function BookingsPage() {
     {
       bookingId: "b3234567-89ab-cdef-0123-456789abcdef",
       accommodationId: "a3",
-      accommodationCode: "112 (Phòng)",
+      accommodationCode: "112",
       categoryId: "c3",
       categoryName: "Lữ hành",
       guestName: "Huyền Anh",
@@ -70,7 +82,7 @@ export default function BookingsPage() {
     {
       bookingId: "b4234567-89ab-cdef-0123-456789abcdef",
       accommodationId: "a4",
-      accommodationCode: "109 (Phòng)",
+      accommodationCode: "109",
       categoryId: "c4",
       categoryName: "Trần Châm",
       guestName: "Trần Châm",
@@ -100,15 +112,15 @@ export default function BookingsPage() {
       }
       if (searchQuery) {
         const lowerQ = searchQuery.toLowerCase();
-        filtered = filtered.filter(b => 
-          b.guestName.toLowerCase().includes(lowerQ) || 
+        filtered = filtered.filter(b =>
+          b.guestName.toLowerCase().includes(lowerQ) ||
           b.bookingId.toLowerCase().includes(lowerQ) ||
           (b.accommodationCode && b.accommodationCode.toLowerCase().includes(lowerQ))
         );
       }
 
       setBookings(filtered);
-      
+
       /* Comment out real API call since user wants UI only for now
       const queryParams = new URLSearchParams({
         page: page.toString(),
@@ -137,17 +149,6 @@ export default function BookingsPage() {
     return () => clearTimeout(timeout);
   }, [fetchBookings]);
 
-  const tabs = [
-    { id: 'ALL', label: 'Tất cả đơn đặt' },
-    { id: 'COMING', label: 'Khách sẽ đến' },
-    { id: 'ARRIVED', label: 'Khách đã đến' },
-    { id: 'STAYING', label: 'Khách đang ở' },
-    { id: 'LEAVING', label: 'Khách sẽ đi' },
-    { id: 'LEFT', label: 'Khách đã đi' },
-    { id: 'CANCELLED', label: 'Đã hủy' },
-    { id: 'MY_BOOKINGS', label: 'Booking tạo bởi mình' },
-  ] as const;
-
   const translateStatus = (status: string) => {
     switch (status) {
       case 'PENDING_DEPOSIT': return 'Chờ cọc';
@@ -165,9 +166,24 @@ export default function BookingsPage() {
       {/* Sidebar Filters */}
       <div className={styles.sidebar}>
         <div className={styles.sidebarHeader}>Mặc định</div>
+
+        {/* Mobile Dropdown */}
+        <div className={styles.mobileTabDropdown}>
+          <select
+            value={activeTab}
+            onChange={(e) => { setActiveTab(e.target.value as TabType); setPage(0); }}
+            className={styles.mobileSelect}
+          >
+            {tabs.map(tab => (
+              <option key={tab.id} value={tab.id}>{tab.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Desktop Tabs */}
         <div className={styles.tabList}>
           {tabs.map(tab => (
-            <button 
+            <button
               key={tab.id}
               className={`${styles.tab} ${activeTab === tab.id ? styles.activeTab : ''}`}
               onClick={() => { setActiveTab(tab.id); setPage(0); }}
@@ -181,7 +197,7 @@ export default function BookingsPage() {
       {/* Main Content */}
       <div className={styles.mainContent}>
         <div className={styles.topBar}>
-          
+
           <div className={styles.actionRow}>
             <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--color-primary)' }}>
               Danh sách đặt phòng
@@ -199,15 +215,15 @@ export default function BookingsPage() {
           </div>
 
           <div className={styles.filterRow}>
-            <input 
-              type="text" 
-              className={styles.searchInput} 
-              placeholder="Mã đặt phòng, tên khách, SĐT..." 
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="Mã đặt phòng, tên khách, SĐT..."
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
             />
-            
-            <select 
+
+            <select
               className={styles.selectInput}
               value={source}
               onChange={(e) => { setSource(e.target.value); setPage(0); }}
@@ -218,7 +234,7 @@ export default function BookingsPage() {
               <option value="BOOKING">Booking.com</option>
             </select>
 
-            <select 
+            <select
               className={styles.selectInput}
               value={roomType}
               onChange={(e) => { setRoomType(e.target.value); setPage(0); }}
@@ -229,24 +245,24 @@ export default function BookingsPage() {
             </select>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input 
-                type="date" 
-                className={`mono-text ${styles.dateInput}`} 
+              <input
+                type="date"
+                className={`mono-text ${styles.dateInput}`}
                 value={startDate}
                 onChange={(e) => { setStartDate(e.target.value); setPage(0); }}
                 title="Từ ngày"
               />
               <span style={{ color: '#9ca3af' }}>&rarr;</span>
-              <input 
-                type="date" 
-                className={`mono-text ${styles.dateInput}`} 
+              <input
+                type="date"
+                className={`mono-text ${styles.dateInput}`}
                 value={endDate}
                 onChange={(e) => { setEndDate(e.target.value); setPage(0); }}
                 title="Đến ngày"
               />
             </div>
 
-            <button 
+            <button
               className={`${styles.btn} ${styles.btnOutline}`}
               onClick={() => {
                 setSearchQuery("");
@@ -268,6 +284,7 @@ export default function BookingsPage() {
         </div>
 
         <div className={styles.contentBody}>
+          {/* Desktop Table View */}
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
               <thead>
@@ -316,8 +333,115 @@ export default function BookingsPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card View */}
+          <div className={styles.mobileCardList}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '2rem' }}>Đang tải dữ liệu...</div>
+            ) : bookings.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>Không có dữ liệu</div>
+            ) : (
+              bookings.map(b => (
+                <div key={b.bookingId} className={styles.bookingCard} onClick={() => setSelectedBooking(b)}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardTitle}>{b.guestName}</div>
+                  </div>
+                  <div className={styles.cardGrid}>
+                    <div>
+                      <div className={styles.cardLabel}>Phòng</div>
+                      <div className={`mono-text ${styles.cardValue}`}>{b.accommodationCode || b.categoryName}</div>
+                    </div>
+                    <div>
+                      <div className={styles.cardLabel}>Trạng thái</div>
+                      <span className={`${styles.statusBadge} ${styles['status_' + b.status]}`}>
+                        {translateStatus(b.status)}
+                      </span>
+                    </div>
+                    <div>
+                      <div className={styles.cardLabel}>Đến</div>
+                      <div className={`mono-text ${styles.cardValue}`}>
+                        {new Date(b.checkinDate).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                      </div>
+                    </div>
+                    <div>
+                      <div className={styles.cardLabel}>Đi</div>
+                      <div className={`mono-text ${styles.cardValue}`}>
+                        {new Date(b.checkoutDate).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Booking Details Modal */}
+      {selectedBooking && (
+        <div className={styles.modalOverlay} onClick={() => setSelectedBooking(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Chi tiết đặt phòng</h3>
+              <button className={styles.modalCloseBtn} onClick={() => setSelectedBooking(null)}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>Khách hàng:</span>
+                <span className={styles.modalDetailValue}>{selectedBooking.guestName}</span>
+              </div>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>SĐT:</span>
+                <span className="mono-text">{selectedBooking.guestPhone}</span>
+              </div>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>Mã đặt:</span>
+                <span className="mono-text">{selectedBooking.bookingId}</span>
+              </div>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>Phòng:</span>
+                <span className="mono-text">{selectedBooking.accommodationCode || selectedBooking.categoryName}</span>
+              </div>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>Ngày đến:</span>
+                <span className="mono-text">{new Date(selectedBooking.checkinDate).toLocaleString('vi-VN')}</span>
+              </div>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>Ngày đi:</span>
+                <span className="mono-text">{new Date(selectedBooking.checkoutDate).toLocaleString('vi-VN')}</span>
+              </div>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>Số người:</span>
+                <span className="mono-text">{selectedBooking.guestsCount} Người lớn</span>
+              </div>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>Trạng thái:</span>
+                <span className={`${styles.statusBadge} ${styles['status_' + selectedBooking.status]}`}>
+                  {translateStatus(selectedBooking.status)}
+                </span>
+              </div>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>Tổng tiền:</span>
+                <span className="mono-text" style={{ fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                  {selectedBooking.totalAmount.toLocaleString('vi-VN')} VNĐ
+                </span>
+              </div>
+              <div className={styles.modalDetailRow}>
+                <span className={styles.modalDetailLabel}>Đã cọc:</span>
+                <span className="mono-text" style={{ color: '#059669' }}>
+                  {selectedBooking.depositAmount.toLocaleString('vi-VN')} VNĐ
+                </span>
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => setSelectedBooking(null)}>Đóng</button>
+              <button className={`${styles.btn} ${styles.btnPrimary}`}>Chỉnh sửa</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

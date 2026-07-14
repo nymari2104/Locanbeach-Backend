@@ -7,8 +7,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow-x: hidden;
 }
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .adminMain {
     margin-left: 18rem; /* Match sidebar width */
     transition: margin-left 0.3s ease;
@@ -26,7 +28,7 @@
   padding: 1rem var(--spacing-gutter);
   border-bottom: 1px solid var(--color-whisper-border);
 }
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .mobileHeader {
     display: none;
   }
@@ -42,11 +44,11 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: var(--rounded-full);
-  background-color: var(--color-primary);
-  color: var(--color-on-primary);
+  background-color: var(--color-pure-surface);
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--color-whisper-border);
 }
 
 .mobileBrandName {
@@ -63,13 +65,25 @@
   border: none;
   color: var(--color-on-surface-variant);
   cursor: pointer;
+  padding: 0.25rem;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 30; /* Below sidebar's z-index 40 */
+  backdrop-filter: blur(2px);
 }
 
 .adminContent {
   padding: var(--spacing-gutter);
   min-height: 100vh;
 }
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .adminContent {
     padding: var(--spacing-container-padding);
   }

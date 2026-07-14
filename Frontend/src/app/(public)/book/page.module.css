@@ -268,17 +268,6 @@
 .featuredCard {
   grid-column: span 1;
 }
-@media (min-width: 768px) {
-  .featuredCard {
-    grid-column: span 2;
-    flex-direction: row;
-  }
-}
-@media (min-width: 1024px) {
-  .featuredCard {
-    grid-column: span 2;
-  }
-}
 
 .imageWrapper {
   position: relative;
@@ -292,12 +281,6 @@
 @media (min-width: 768px) {
   .imageWrapper {
     max-height: 240px;
-  }
-  .featuredCard .imageWrapper {
-    max-height: none;
-    width: 50%;
-    height: 100%;
-    aspect-ratio: auto;
   }
 }
 
@@ -332,10 +315,6 @@
   .roomDetails {
     padding: 1.25rem;
   }
-  .featuredCard .roomDetails {
-    width: 50%;
-    padding: 2rem;
-  }
 }
 
 .roomHeader {
@@ -349,15 +328,9 @@
   font-weight: bold;
   font-size: 1.125rem;
 }
-.featuredCard .roomName {
-  font-size: 1.25rem;
-}
 @media (min-width: 768px) {
   .roomName {
     font-size: 1.25rem;
-  }
-  .featuredCard .roomName {
-    font-size: 1.5rem;
   }
 }
 
@@ -370,15 +343,9 @@
   font-weight: bold;
   color: var(--color-primary);
 }
-.featuredCard .price {
-  font-size: 1.125rem;
-}
 @media (min-width: 768px) {
   .price {
     font-size: 1.125rem;
-  }
-  .featuredCard .price {
-    font-size: 1.25rem;
   }
 }
 

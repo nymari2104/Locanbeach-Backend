@@ -54,6 +54,12 @@ public class Booking {
     @Column(name = "checkout_date", nullable = false)
     private java.time.LocalDateTime checkoutDate;
 
+    @Column(name = "actual_checkin_at")
+    private java.time.LocalDateTime actualCheckinAt;
+
+    @Column(name = "actual_checkout_at")
+    private java.time.LocalDateTime actualCheckoutAt;
+
     @Column(name = "guests_count", nullable = false)
     private Integer guestsCount = 1;
 

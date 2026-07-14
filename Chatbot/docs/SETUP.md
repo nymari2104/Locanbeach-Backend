@@ -169,8 +169,8 @@ Tìm trong đống log hiển thị, bạn sẽ thấy một khung viền hình 
   - **Model**: `models/gemini-embedding-001`
   - **Credentials**: Google Gemini credential đã tạo
 - **Sub-node: Recursive Character Text Splitter** (Gắn vào bên cạnh Data Loader):
-  - **Chunk Size**: `1000`
-  - **Chunk Overlap**: `200`
+  - **Chunk Size**: `2000`
+  - **Chunk Overlap**: `400`
 
 ### ⚡ Chạy nạp tri thức:
 1. Click **`Execute workflow`**.
@@ -261,7 +261,7 @@ You are Marina, the smart, warm, and professional AI concierge for Ocean Breeze 
 #### Sub-node 2: Vector Store Question Answer Tool (RAG Tool)
 - **Node Name**: Đổi thành `hotel_knowledge`
 - **Description of Data**: `Use this tool to search for information about Ocean Breeze Resort, including room types, pricing, amenities, services, policies, promotions, nearby locations, and frequently asked questions (FAQs).`
-- **Vector Store**: Postgres PGVector Store (Retrieve mode, Table: `knowledge_documents`, Top K: `5`)
+- **Vector Store**: Postgres PGVector Store (Retrieve mode, Table: `knowledge_documents`, Top K: `10`)
 - **Embeddings**: Embeddings Google Gemini (`models/gemini-embedding-001`)
 
 #### Sub-node 3: PostgreSQL Tool (Live DB Tool)

@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS knowledge_documents (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     content TEXT NOT NULL,
     metadata JSONB DEFAULT '{}',
-    -- Gemini text-embedding-004 outputs 768 dimensions
-    embedding vector(768),
+    -- Gemini text-embedding-004 outputs 3072 dimensions in n8n by default
+    embedding vector(3072),
     category VARCHAR(100),
     source VARCHAR(255),
     language VARCHAR(10) DEFAULT 'vi', -- 'vi' or 'en'
@@ -26,11 +26,8 @@ CREATE TABLE IF NOT EXISTS knowledge_documents (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- HNSW index for fast similarity search
-CREATE INDEX IF NOT EXISTS idx_knowledge_embedding
-ON knowledge_documents
-USING hnsw (embedding vector_cosine_ops)
-WITH (m = 16, ef_construction = 64);
+-- No HNSW index is created because vector(3072) exceeds the 2000-dimension limit for standard HNSW in pgvector.
+-- For local development with small datasets, a sequential scan is extremely fast and more accurate.
 
 CREATE INDEX IF NOT EXISTS idx_knowledge_category
 ON knowledge_documents(category);
@@ -108,7 +105,7 @@ CREATE TABLE IF NOT EXISTS hotel_policies (
 -- 4. SIMILARITY SEARCH FUNCTION
 -- ══════════════════════════════════════════════
 CREATE OR REPLACE FUNCTION search_knowledge(
-    query_embedding vector(768),
+    query_embedding vector(3072),
     match_threshold FLOAT DEFAULT 0.65,
     match_count INT DEFAULT 5,
     filter_category VARCHAR DEFAULT NULL,

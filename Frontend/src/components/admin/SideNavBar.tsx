@@ -4,12 +4,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./SideNavBar.module.css";
 
-export default function SideNavBar({ isCollapsed = false, onToggle }: { isCollapsed?: boolean, onToggle?: () => void }) {
+export default function SideNavBar({ 
+  isCollapsed = false, 
+  onToggle,
+  isMobileOpen = false,
+  onMobileClose
+}: { 
+  isCollapsed?: boolean, 
+  onToggle?: () => void,
+  isMobileOpen?: boolean,
+  onMobileClose?: () => void
+}) {
   const pathname = usePathname();
 
   return (
-    <nav className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
-      {/* Toggle Button */}
+    <nav className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''} ${isMobileOpen ? styles.mobileOpen : ''}`}>
+      {/* Toggle Button for Desktop */}
       <button className={styles.toggleBtn} onClick={onToggle}>
         <span className="material-symbols-outlined">
           {isCollapsed ? 'chevron_right' : 'chevron_left'}

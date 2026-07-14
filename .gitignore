@@ -5,6 +5,9 @@
 postgres_data/
 n8n_data/
 
+# Chatbot workflows
+Chatbot/workflow/
+
 # OS files
 .DS_Store
 Thumbs.db
