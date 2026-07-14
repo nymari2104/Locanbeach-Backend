@@ -5,13 +5,98 @@
 		"description": "Full Postman collection for The House Resort with automated tests and variable chaining.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwtToken}}",
+				"type": "string"
+			}
+		]
+	},
 	"item": [
+		{
+			"name": "0. Authentication",
+			"item": [
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Login successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const res = pm.response.json();",
+									"    pm.expect(res.data).to.have.property('accessToken');",
+									"    pm.collectionVariables.set('jwtToken', res.data.accessToken);",
+									"    console.log('🔑 JWT Token saved successfully!');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Profile (Me)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"me"
+							]
+						}
+					}
+				}
+			]
+		},
 		{
 			"name": "1. Categories",
 			"item": [
 				{
 					"name": "Get All Categories",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -30,6 +115,9 @@
 				{
 					"name": "Get Category By ID",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -129,6 +217,9 @@
 				{
 					"name": "Get All Accommodations",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -147,6 +238,9 @@
 				{
 					"name": "Get Accommodation By ID",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -245,6 +339,9 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -392,6 +489,9 @@
 				{
 					"name": "Get All Services",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -410,6 +510,9 @@
 				{
 					"name": "Get Service By ID",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -504,6 +607,9 @@
 				{
 					"name": "Get All Combos",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -522,6 +628,9 @@
 				{
 					"name": "Get Combo By ID",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -616,6 +725,9 @@
 				{
 					"name": "Get All Amenities",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -634,6 +746,9 @@
 				{
 					"name": "Get Amenity By ID",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -749,6 +864,11 @@
 			"type": "string"
 		},
 		{
+			"key": "jwtToken",
+			"value": "",
+			"type": "string"
+		},
+		{
 			"key": "categoryId",
 			"value": "",
 			"type": "string"
@@ -795,3 +915,4 @@
 		}
 	]
 }
+
