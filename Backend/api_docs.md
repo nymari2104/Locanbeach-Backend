@@ -333,3 +333,90 @@ Ví dụ trong phần `data` của Category sẽ có cấu trúc như sau:
 }
 ```
 
+---
+
+## ⚠️ 5. Xử Lý Lỗi & Danh Sách Error Codes (Error Handling for Frontend)
+
+Hệ thống sử dụng cấu trúc phản hồi lỗi chuẩn khi xảy ra lỗi (HTTP Status code khác `2xx`). Frontend nên dựa vào thuộc tính `code` để thực hiện dịch ngôn ngữ hoặc hiển thị thông báo thân thiện cho người dùng.
+
+### 5.1 Cấu Trúc Response Lỗi Chuẩn
+Khi có lỗi xảy ra, API sẽ trả về cấu trúc như sau:
+```json
+{
+  "code": "ERROR_CODE_STRING",
+  "data": null,
+  "message": "Chi tiết lỗi bằng Tiếng Anh (hoặc mô tả kỹ thuật)"
+}
+```
+
+### 5.2 Danh Sách Error Codes Theo Nhóm
+
+#### 🔐 1. Nhóm Xác Thực & Phân Quyền (Authentication & Authorization)
+| HTTP Status | `code` | Thông báo hiển thị gợi ý cho người dùng | Mô tả / Ngữ cảnh |
+| :--- | :--- | :--- | :--- |
+| **401** | `INVALID_CREDENTIALS` | Tên đăng nhập hoặc mật khẩu không chính xác. | Sai thông tin khi đăng nhập |
+| **401** | `TOKEN_INVALID` | Phiên làm việc đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại. | JWT Token không hợp lệ hoặc hết hạn |
+| **401** | `UNAUTHORIZED` | Vui lòng đăng nhập để thực hiện chức năng này. | Chưa cung cấp token |
+| **403** | `USER_DISABLED` | Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên. | Tài khoản bị disable |
+| **403** | `ACCESS_DENIED` | Bạn không có quyền thực hiện hành động này. | Token hợp lệ nhưng không đủ quyền |
+| **404** | `USER_NOT_FOUND` | Không tìm thấy thông tin tài khoản. | Không tồn tại username |
+
+#### 📅 2. Nhóm Đặt Phòng & Giữ Chỗ (Booking Flow)
+| HTTP Status | `code` | Thông báo hiển thị gợi ý cho người dùng | Mô tả / Ngữ cảnh |
+| :--- | :--- | :--- | :--- |
+| **400** | `INVALID_CHECKIN_STATUS` | Ngày nhận phòng hoặc ngày trả phòng không hợp lệ. | Ngày trả phòng trước ngày nhận phòng |
+| **400** | `INVALID_CHECKOUT_STATUS` | Phòng chưa được check-in nên không thể thực hiện check-out. | Check-out khi trạng thái đặt phòng không phải CHECKED_IN |
+| **404** | `HOLD_NOT_FOUND` | Phiên giữ chỗ không hợp lệ hoặc đã bị hủy. | Không tìm thấy Hold ID |
+| **404** | `BOOKING_NOT_FOUND` | Không tìm thấy thông tin đơn đặt phòng này. | Không tìm thấy Booking ID |
+| **409** | `NO_AVAILABLE_ROOM` | Đã hết phòng trống cho loại phòng và thời gian bạn đã chọn. | Không còn phòng vật lý trống |
+| **410** | `HOLD_EXPIRED` | Phiên giữ phòng của bạn đã hết hạn (quá 10 phút). Vui lòng thử lại. | Đặt chỗ tạm thời đã hết hạn |
+
+#### 📂 3. Nhóm Danh Mục & Loại Phòng (Categories & Accommodations)
+| HTTP Status | `code` | Thông báo hiển thị gợi ý cho người dùng | Mô tả / Ngữ cảnh |
+| :--- | :--- | :--- | :--- |
+| **404** | `CATEGORY_NOT_FOUND` | Không tìm thấy loại phòng yêu cầu. | Sai ID loại phòng |
+| **404** | `ACCOMMODATION_NOT_FOUND` | Không tìm thấy phòng vật lý yêu cầu. | Sai ID phòng vật lý |
+| **409** | `CATEGORY_CODE_ALREADY_EXISTS` | Mã loại phòng này đã tồn tại trong hệ thống. | Tạo loại phòng trùng code |
+| **409** | `ACCOMMODATION_CODE_ALREADY_EXISTS` | Số phòng này đã tồn tại trong hệ thống. | Tạo phòng trùng code/số phòng |
+
+#### 💆 4. Nhóm Dịch Vụ, Combo & Tiện Ích (Services, Combos & Amenities)
+| HTTP Status | `code` | Thông báo hiển thị gợi ý cho người dùng | Mô tả / Ngữ cảnh |
+| :--- | :--- | :--- | :--- |
+| **404** | `SERVICE_NOT_FOUND` | Không tìm thấy dịch vụ yêu cầu. | Sai ID dịch vụ |
+| **404** | `COMBO_NOT_FOUND` | Gói combo ưu đãi không tồn tại hoặc đã hết hạn. | Sai ID combo |
+| **404** | `AMENITY_NOT_FOUND` | Không tìm thấy tiện ích phòng yêu cầu. | Sai ID tiện ích |
+| **409** | `SERVICE_NAME_ALREADY_EXISTS` | Tên dịch vụ này đã tồn tại. | Tạo dịch vụ trùng tên |
+
+#### 🖼️ 5. Nhóm Hình Ảnh & Cloudinary
+| HTTP Status | `code` | Thông báo hiển thị gợi ý cho người dùng | Mô tả / Ngữ cảnh |
+| :--- | :--- | :--- | :--- |
+| **404** | `IMAGE_NOT_FOUND` | Không tìm thấy hình ảnh yêu cầu. | Sai ID ảnh |
+| **500** | `CLOUDINARY_UPLOAD_FAILED` | Tải ảnh lên dịch vụ Cloudinary thất bại. | Lỗi khi upload file |
+| **500** | `CLOUDINARY_DELETE_FAILED` | Xóa ảnh trên dịch vụ Cloudinary thất bại. | Lỗi khi destroy file |
+
+#### ⚙️ 6. Các Lỗi Hệ Thống Chung (General/System Error)
+| HTTP Status | `code` | Thông báo hiển thị gợi ý cho người dùng | Mô tả / Ngữ cảnh |
+| :--- | :--- | :--- | :--- |
+| **400** | `INVALID_INPUT` | Dữ liệu gửi lên không đúng định dạng. Vui lòng kiểm tra lại. | Lỗi parse JSON hoặc thiếu tham số |
+| **400** | `VALIDATION_ERROR` | Thông tin nhập vào không hợp lệ. | Lỗi Bean Validation (ví dụ: email sai định dạng, giá trị âm,...) |
+| **400** | `DATA_INTEGRITY_VIOLATION` | Thao tác thất bại do xung đột dữ liệu liên kết. | Lỗi khóa ngoại DB (ví dụ: xóa tiện ích đang được gán cho phòng) |
+| **500** | `INTERNAL_SERVER_ERROR` | Hệ thống đang gặp sự cố. Vui lòng quay lại sau. | Lỗi hệ thống không xác định |
+| **500** | `UNCATEGORIZED_EXCEPTION` | Đã xảy ra lỗi không xác định. | Lỗi Runtime chưa được phân nhóm cụ thể |
+
+### 5.3 Cách Xử Lý Lợi Ý Cho Frontend
+1. **Kiểm tra Response status**: Nếu `status !== 200` và `status !== 201`, hãy đọc `response.data`.
+2. **Dựa vào `code`**: Sử dụng một dictionary mapper ở Frontend để map `code` sang Tiếng Việt.
+   ```javascript
+   const ErrorMessages = {
+     "INVALID_CREDENTIALS": "Tên đăng nhập hoặc mật khẩu không chính xác.",
+     "HOLD_EXPIRED": "Phiên giữ phòng của bạn đã hết hạn. Vui lòng chọn lại phòng.",
+     // ... các mã khác
+   };
+   
+   const getErrorMessage = (backendCode) => {
+     return ErrorMessages[backendCode] || "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.";
+   };
+   ```
+3. **Hiển thị thông báo**: Sử dụng Toast (ví dụ `react-hot-toast`, `react-toastify`) hoặc alert banner để hiển thị nội dung thân thiện cho khách hàng dựa vào hàm `getErrorMessage`.
+
+
