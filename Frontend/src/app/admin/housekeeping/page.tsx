@@ -137,7 +137,7 @@ export default function Housekeeping() {
                   {room.operationalStatus === "DIRTY" && (
                     <button
                       className={`${styles.actionBtn} ${styles.btnStart}`}
-                      onClick={() => handleStatusChange(room.id, "CLEANING")}
+                      onClick={() => room.id && handleStatusChange(room.id, "CLEANING")}
                     >
                       <span className="material-symbols-outlined">play_arrow</span>
                       Bắt đầu dọn
@@ -146,7 +146,7 @@ export default function Housekeeping() {
                   {room.operationalStatus === "CLEANING" && (
                     <button
                       className={`${styles.actionBtn} ${styles.btnDone}`}
-                      onClick={() => handleStatusChange(room.id, "VACANT")}
+                      onClick={() => room.id && handleStatusChange(room.id, "VACANT")}
                     >
                       <span className="material-symbols-outlined">done</span>
                       Hoàn tất dọn dẹp
