@@ -81,6 +81,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(GeneralErrorCode.VALIDATION_ERROR.getCode(), exception.getMessage()));
     }
 
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(GeneralErrorCode.INVALID_INPUT.getCode(), "Tham số đầu vào không đúng định dạng: " + exception.getName()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUncaughtException(Exception exception) {
         log.error("Uncaught exception: ", exception);

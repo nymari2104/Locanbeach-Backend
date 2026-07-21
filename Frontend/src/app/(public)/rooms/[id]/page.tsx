@@ -10,7 +10,7 @@ import {
   HoldRoomResponse, 
   ConfirmBookingResponse 
 } from "@/types/api";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -80,6 +80,7 @@ function RoomDetailContent({ id }: { id: string }) {
 
   const [room, setRoom] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isNotFound, setIsNotFound] = useState(false);
 
   // Booking Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -140,10 +141,8 @@ function RoomDetailContent({ id }: { id: string }) {
             amenity: imagesList[4] || imagesList[0],
           }
         });
-      } catch (e) {
-        if (FALLBACK_ROOMS[id]) {
-          setRoom(FALLBACK_ROOMS[id]);
-        }
+      } catch (err) {
+        setIsNotFound(true);
       } finally {
         setLoading(false);
       }
@@ -193,6 +192,10 @@ function RoomDetailContent({ id }: { id: string }) {
       setBookingProgress("error");
     }
   };
+
+  if (isNotFound) {
+    notFound();
+  }
 
   if (loading || !room) {
     return (
