@@ -95,6 +95,9 @@ services:
     restart: unless-stopped
     # Generates a free trycloudflare.com tunnel using HTTP2 protocol over port 443 (firewall-friendly)
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    environment:
+      TUNNEL_NO_PRECHECKS: "true"
+      TUNNEL_TRANSPORT_PROTOCOL: "http2"
     depends_on:
       - n8n
     networks:
